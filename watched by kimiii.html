@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON CHRONO | Future of Time</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-purple: #9d00ff;
+            --dark-bg: #050508;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg);
+            color: white;
+            overflow-x: hidden;
+            cursor: none;
+        }
+        
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* Custom Cursor */
+        .cursor-dot,
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        
+        .cursor-dot {
+            width: 5px;
+            height: 5px;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+        
+        .cursor-outline {
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--neon-cyan);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+        }
+        
+        .cursor-outline.hover {
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-pink);
+        }
+        
+        /* Neon Text Effects */
+        .neon-text {
+            text-shadow: 
+                0 0 10px currentColor,
+                0 0 20px currentColor,
+                0 0 40px currentColor,
+                0 0 80px currentColor;
+        }
+        
+        .neon-border {
+            box-shadow: 
+                0 0 5px var(--neon-cyan),
+                0 0 10px var(--neon-cyan),
+                inset 0 0 5px var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+        }
+        
+        .neon-border-pink {
+            box-shadow: 
+                0 0 5px var(--neon-pink),
+                0 0 10px var(--neon-pink),
+                inset 0 0 5px var(--neon-pink);
+            border: 1px solid var(--neon-pink);
+        }
+        
+        /* Glassmorphism */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 3D Canvas Container */
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+            animation: glitch-skew 1s infinite;
+        }
+        
+        @keyframes glitch-skew {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(-2deg); }
+            40% { transform: skew(2deg); }
+            60% { transform: skew(-1deg); }
+            80% { transform: skew(1deg); }
+            100% { transform: skew(0deg); }
+        }
+        
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(2deg); }
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Scanline Effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.3;
+        }
+        
+        /* Product Card 3D Tilt */
+        .product-card {
+            transform-style: preserve-3d;
+            transition: transform 0.1s;
+        }
+        
+        .product-card:hover {
+            transform: translateZ(20px);
+        }
+        
+        /* Grid Background */
+        .cyber-grid {
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: center center;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-cyan);
+            border-radius: 4px;
+        }
+        
+        /* Button Hover Effects */
+        .neon-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .neon-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .neon-btn:hover::before {
+            left: 100%;
+        }
+        
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .loader-ring {
+            width: 80px;
+            height: 80px;
+            border: 4px solid transparent;
+            border-top: 4px solid var(--neon-cyan);
+            border-right: 4px solid var(--neon-pink);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Cart Sidebar */
+        .cart-sidebar {
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .cart-sidebar.open {
+            transform: translateX(0);
+        }
+        
+        /* Particle Container */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-950">
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="loader-ring mb-4"></div>
+        <div class="font-orbitron text-2xl neon-text text-cyan-400 tracking-widest">LOADING SYSTEM</div>
+        <div class="text-gray-500 mt-2 font-mono text-sm">Initializing Neon Protocol...</div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot hidden md:block"></div>
+    <div class="cursor-outline hidden md:block"></div>
+
+    <!-- Scanlines Overlay -->
+    <div class="scanlines"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b border-cyan-500/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-2 group cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <div class="w-10 h-10 border-2 border-cyan-400 rounded-full flex items-center justify-center group-hover:rotate-180 transition-transform duration-700 shadow-[0_0_15px_rgba(0,243,255,0.5)]">
+                        <span class="font-orbitron font-bold text-cyan-400">N</span>
+                    </div>
+                    <span class="font-orbitron text-2xl font-bold tracking-wider text-white group-hover:text-cyan-400 transition-colors">
+                        NEON<span class="text-fuchsia-500">CHRONO</span>
+                    </span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#collection" class="nav-link text-gray-300 hover:text-cyan-400 transition-colors font-medium tracking-wide text-sm uppercase">Collection</a>
+                    <a href="#features" class="nav-link text-gray-300 hover:text-cyan-400 transition-colors font-medium tracking-wide text-sm uppercase">Features</a>
+                    <a href="#specs" class="nav-link text-gray-300 hover:text-cyan-400 transition-colors font-medium tracking-wide text-sm uppercase">Specs</a>
+                    <a href="#contact" class="nav-link text-gray-300 hover:text-cyan-400 transition-colors font-medium tracking-wide text-sm uppercase">Contact</a>
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <button class="relative group" onclick="toggleCart()">
+                        <svg class="w-6 h-6 text-gray-300 group-hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-fuchsia-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-[0_0_10px_rgba(255,0,255,0.8)]">0</span>
+                    </button>
+                    <button class="md:hidden text-gray-300" onclick="toggleMobileMenu()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 z-40 bg-black/95 transform translate-x-full transition-transform duration-300 md:hidden">
+        <div class="flex flex-col items-center justify-center h-full space-y-8">
+            <a href="#collection" onclick="toggleMobileMenu()" class="text-2xl font-orbitron text-cyan-400 hover:text-fuchsia-500 transition-colors">COLLECTION</a>
+            <a href="#features" onclick="toggleMobileMenu()" class="text-2xl font-orbitron text-cyan-400 hover:text-fuchsia-500 transition-colors">FEATURES</a>
+            <a href="#specs" onclick="toggleMobileMenu()" class="text-2xl font-orbitron text-cyan-400 hover:text-fuchsia-500 transition-colors">SPECS</a>
+            <a href="#contact" onclick="toggleMobileMenu()" class="text-2xl font-orbitron text-cyan-400 hover:text-fuchsia-500 transition-colors">CONTACT</a>
+        </div>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-50 hidden backdrop-blur-sm" onclick="toggleCart()"></div>
+    <div id="cart-sidebar" class="cart-sidebar fixed right-0 top-0 h-full w-full md:w-96 bg-gray-900/95 backdrop-blur-xl border-l border-cyan-500/30 z-50 p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+            <h3 class="font-orbitron text-2xl text-cyan-400">YOUR CART</h3>
+            <button onclick="toggleCart()" class="text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="cart-items" class="space-y-4 mb-6">
+            <p class="text-gray-500 text-center py-8">Your cart is empty</p>
+        </div>
+        <div class="border-t border-gray-700 pt-4">
+            <div class="flex justify-between mb-4 text-lg">
+                <span class="text-gray-400">Total</span>
+                <span id="cart-total" class="font-orbitron text-cyan-400 text-xl">$0.00</span>
+            </div>
+            <button onclick="checkout()" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-fuchsia-500 font-orbitron font-bold text-white rounded neon-btn hover:shadow-[0_0_30px_rgba(0,243,255,0.5)] transition-all">
+                CHECKOUT
+            </button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen flex items-center justify-center overflow-hidden cyber-grid">
+        <canvas id="hero-canvas"></canvas>
+        
+        <div class="relative z-10 text-center px-4 max-w-6xl mx-auto">
+            <div class="mb-4 inline-block">
+                <span class="px-4 py-1 border border-cyan-500/50 rounded-full text-cyan-400 text-sm tracking-[0.3em] uppercase bg-cyan-500/10 backdrop-blur-sm">
+                    Est. 2084
+                </span>
+            </div>
+            
+            <h1 class="font-orbitron text-5xl md:text-8xl font-black mb-6 leading-tight glitch">
+                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-fuchsia-500 neon-text" style="--tw-text-opacity: 1;">
+                    TIME
+                </span>
+                <span class="block text-white text-4xl md:text-7xl mt-2 tracking-widest">
+                    REDEFINED
+                </span>
+            </h1>
+            
+            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light tracking-wide">
+                Experience the fusion of cybernetic precision and neon aesthetics. 
+                Where horology meets the digital frontier.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <button onclick="scrollToCollection()" class="group relative px-8 py-4 bg-transparent border-2 border-cyan-400 text-cyan-400 font-orbitron font-bold tracking-wider overflow-hidden rounded neon-btn hover:text-black transition-colors duration-300">
+                    <span class="relative z-10">EXPLORE COLLECTION</span>
+                    <div class="absolute inset-0 bg-cyan-400 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                </button>
+                <button onclick="playVideo()" class="flex items-center space-x-2 text-gray-400 hover:text-fuchsia-500 transition-colors group">
+                    <div class="w-12 h-12 rounded-full border-2 border-current flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M6.3 5.84a.5.5 0 01.77-.42l7.15 4.16a.5.5 0 010 .84l-7.15 4.16a.5.5 0 01-.77-.42V5.84z"></path>
+                        </svg>
+                    </div>
+                    <span class="font-medium tracking-wide">WATCH FILM</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Floating Stats -->
+        <div class="absolute bottom-10 left-4 md:left-10 glass p-4 rounded-lg border border-cyan-500/20 hidden md:block">
+            <div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Precision</div>
+            <div class="font-orbitron text-2xl text-cyan-400">±0.001s</div>
+        </div>
+        
+        <div class="absolute bottom-10 right-4 md:right-10 glass p-4 rounded-lg border border-fuchsia-500/20 hidden md:block">
+            <div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Water Resist</div>
+            <div class="font-orbitron text-2xl text-fuchsia-500">300M</div>
+        </div>
+    </section>
+
+    <!-- Featured Collection -->
+    <section id="collection" class="relative py-32 bg-gray-950 overflow-hidden">
+        <div class="absolute inset-0 cyber-grid opacity-20"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-20">
+                <h2 class="font-orbitron text-4xl md:text-6xl font-bold mb-4 text-white">
+                    NEON <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500">COLLECTION</span>
+                </h2>
+                <div class="w-24 h-1 bg-gradient-to-r from-cyan-400 to-fuchsia-500 mx-auto rounded-full shadow-[0_0_20px_rgba(0,243,255,0.8)]"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="product-grid">
+                <!-- Products injected via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 3D Showcase Section -->
+    <section id="showcase" class="relative py-32 bg-black overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-gray-950 via-black to-gray-950"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="space-y-8">
+                    <h2 class="font-orbitron text-5xl md:text-7xl font-bold leading-tight">
+                        <span class="text-cyan-400 neon-text">CYBER</span><br>
+                        <span class="text-white">CHRONO</span><br>
+                        <span class="text-fuchsia-500 neon-text" style="text-shadow: 0 0 20px #ff00ff;">EDITION</span>
+                    </h2>
+                    
+                    <p class="text-gray-400 text-lg leading-relaxed">
+                        Featuring our proprietary Neon-Core™ movement with 72-hour power reserve. 
+                        The transparent sapphire case reveals the luminous heart of time itself.
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_#00f3ff]"></div>
+                            <span class="text-gray-300">Swiss Made Automatic Movement</span>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="w-2 h-2 bg-fuchsia-500 rounded-full shadow-[0_0_10px_#ff00ff]"></div>
+                            <span class="text-gray-300">Sapphire Crystal with AR Coating</span>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_#00f3ff]"></div>
+                            <span class="text-gray-300">Grade 5 Titanium Case</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4">
+                        <span class="font-orbitron text-4xl text-white">$12,499</span>
+                        <button onclick="addToCart('cyber-chrono', 'Cyber Chrono Edition', 12499, 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500')" 
+                                class="ml-6 px-8 py-3 bg-gradient-to-r from-cyan-500 to-fuchsia-500 rounded font-bold font-orbitron hover:shadow-[0_0_30px_rgba(0,243,255,0.6)] transition-all neon-btn">
+                            ADD TO CART
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="relative h-[600px] flex items-center justify-center">
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-fuchsia-500/20 rounded-full blur-3xl animate-pulse"></div>
+                    <div class="relative floating">
+                        <div class="w-80 h-80 md:w-96 md:h-96 rounded-full border-4 border-cyan-400/30 flex items-center justify-center relative shadow-[0_0_50px_rgba(0,243,255,0.3)]">
+                            <div class="absolute inset-0 rounded-full border-2 border-fuchsia-500/20 animate-spin" style="animation-duration: 10s;"></div>
+                            <div class="absolute inset-4 rounded-full border border-cyan-400/10"></div>
+                            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600" alt="Cyber Chrono" class="w-64 h-64 object-cover rounded-full shadow-2xl">
+                            
+                            <!-- Orbiting Elements -->
+                            <div class="absolute w-full h-full animate-spin" style="animation-duration: 20s;">
+                                <div class="absolute -top-2 left-1/2 w-4 h-4 bg-cyan-400 rounded-full shadow-[0_0_20px_#00f3ff]"></div>
+                            </div>
+                            <div class="absolute w-full h-full animate-spin-reverse" style="animation-duration: 15s;">
+                                <div class="absolute -bottom-2 left-1/2 w-4 h-4 bg-fuchsia-500 rounded-full shadow-[0_0_20px_#ff00ff]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section id="features" class="relative py-32 bg-gray-950">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="group relative p-8 glass rounded-2xl border border-cyan-500/20 hover:border-cyan-400/50 transition-all duration-500 hover:transform hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mb-6 rounded-full bg-cyan-500/10 flex items-center justify-center border border-cyan-400/30 group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-orbitron text-xl font-bold text-white mb-3">Neon Core™</h3>
+                        <p class="text-gray-400 leading-relaxed">Self-luminous movement technology provides 25-year continuous glow without external light source.</p>
+                    </div>
+                </div>
+
+                <div class="group relative p-8 glass rounded-2xl border border-fuchsia-500/20 hover:border-fuchsia-400/50 transition-all duration-500 hover:transform hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mb-6 rounded-full bg-fuchsia-500/10 flex items-center justify-center border border-fuchsia-400/30 group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-fuchsia-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-orbitron text-xl font-bold text-white mb-3">Quantum Shield</h3>
+                        <p class="text-gray-400 leading-relaxed">Military-grade encryption protects your biometric data and payment information.</p>
+                    </div>
+                </div>
+
+                <div class="group relative p-8 glass rounded-2xl border border-cyan-500/20 hover:border-cyan-400/50 transition-all duration-500 hover:transform hover:-translate-y-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 mb-6 rounded-full bg-cyan-500/10 flex items-center justify-center border border-cyan-400/30 group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-orbitron text-xl font-bold text-white mb-3">Global Sync</h3>
+                        <p class="text-gray-400 leading-relaxed">Atomic clock synchronization via satellite ensures perfect time across all timezones.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Specs -->
+    <section id="specs" class="relative py-32 bg-black overflow-hidden">
+        <div class="absolute inset-0 cyber-grid opacity-10"></div>
+        
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <h2 class="font-orbitron text-4xl md:text-5xl font-bold text-center mb-16 text-white">
+                TECHNICAL <span class="text-cyan-400">SPECS</span>
+            </h2>
+            
+            <div class="glass rounded-3xl p-8 md:p-12 border border-cyan-500/20">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center py-4 border-b border-gray-800">
+                            <span class="text-gray-400 uppercase tracking-wider text-sm">Case Material</span>
+                            <span class="font-orbitron text-cyan-400">Grade 5 Titanium</span>
+                        </div>
+                        <div class="flex justify-between items-center py-4 border-b border-gray-800">
+                            <span class="text-gray-400 uppercase tracking-wider text-sm">Crystal</span>
+                            <span class="font-orbitron text-cyan-400">Sapphire AR</span>
+                        </div>
+                        <div class="flex justify-between items-center py-4 border-b border-gray-800">
+                            <span class="text-gray-400 uppercase tracking-wider text-sm">Water Resistance</span>
+                            <span class="font-orbitron text-cyan-400">300 Meters</span>
+                        </div>
+                        <div class="flex justify-between items-center py-4 border-b border-gray-800">
+                            <span class="text-gray-400 uppercase tracking-wider text-sm">Movement</span>
+                            <span class="font-orbitron text-cyan-400">Neon-Core™ Auto</span>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center py-4 border-b border-gray-800">
+                            <span class="text-gray-400 uppercase tracking-wider text-sm">Power Reserve</span>
+                            <span class="font-orbitron text-fuchsia-500">72 Hours</span>
+                        </div>
+                        <div class="flex justify-between items-center py-4 border-b border-gray-800">
+                            <span class="text-gray-400 uppercase tracking-wider text-sm">Frequency</span>
+                            <span class="font-orbitron text-fuchsia-500">28,800 vph</span>
+                        </div>
+                        <div class="flex justify-between items-center py-4 border-b border-gray-800">
+                            <span class="text-gray-400 uppercase tracking-wider text-sm">Jewels</span>
+                            <span class="font-orbitron text-fuchsia-500">35</span>
+                        </div>
+                        <div class="flex justify-between items-center py-4 border-b border-gray-800">
+                            <span class="text-gray-400 uppercase tracking-wider text-sm">Lume</span>
+                            <span class="font-orbitron text-fuchsia-500">Neon-Gas Tubes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="relative py-32 bg-gray-950">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="font-orbitron text-3xl md:text-5xl font-bold mb-6 text-white">JOIN THE <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500">FUTURE</span></h2>
+            <p class="text-gray-400 mb-10 text-lg">Subscribe for exclusive drops and early access to limited editions.</p>
+            
+            <form onsubmit="handleSubscribe(event)" class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+                <input type="email" placeholder="Enter your email" required 
+                       class="flex-1 px-6 py-4 bg-gray-900/50 border border-cyan-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_20px_rgba(0,243,255,0.3)] transition-all">
+                <button type="submit" class="px-8 py-4 bg-gradient-to-r from-cyan-500 to-fuchsia-500 font-orbitron font-bold rounded-lg hover:shadow-[0_0_30px_rgba(0,243,255,0.5)] transition-all neon-btn">
+                    SUBSCRIBE
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-gray-800 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-8 h-8 border border-cyan-400 rounded-full flex items-center justify-center">
+                            <span class="font-orbitron font-bold text-cyan-400 text-sm">N</span>
+                        </div>
+                        <span class="font-orbitron text-xl font-bold text-white">
+                            NEON<span class="text-fuchsia-500">CHRONO</span>
+                        </span>
+                    </div>
+                    <p class="text-gray-500 max-w-sm leading-relaxed">
+                        Pushing the boundaries of horological innovation. 
+                        Where Swiss precision meets cyberpunk aesthetics.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-orbitron text-white mb-6 tracking-wider">COLLECTION</h4>
+                    <ul class="space-y-3 text-gray-500">
+                        <li><a href="#" class="hover:text-cyan-400 transition-colors">Cyber Chrono</a></li>
+                        <li><a href="#" class="hover:text-cyan-400 transition-colors">Neon Diver</a></li>
+                        <li><a href="#" class="hover:text-cyan-400 transition-colors">Quantum Pilot</a></li>
+                        <li><a href="#" class="hover:text-cyan-400 transition-colors">Limited Editions</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-orbitron text-white mb-6 tracking-wider">CONNECT</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:border-cyan-400 hover:text-cyan-400 transition-all hover:shadow-[0_0_15px_rgba(0,243,255,0.4)]">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:border-fuchsia-500 hover:text-fuchsia-500 transition-all hover:shadow-[0_0_15px_rgba(255,0,255,0.4)]">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-600 text-sm">
+                <p>&copy; 2084 Neon Chrono. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-cyan-400 transition-colors">Privacy Protocol</a>
+                    <a href="#" class="hover:text-cyan-400 transition-colors">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Product Data
+        const products = [
+            {
+                id: 'neon-diver',
+                name: 'Neon Diver Pro',
+                price: 8499,
+                image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=500',
+                tag: 'BESTSELLER',
+                tagColor: 'bg-cyan-500'
+            },
+            {
+                id: 'quantum-pilot',
+                name: 'Quantum Pilot',
+                price: 6299,
+                image: 'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=500',
+                tag: 'NEW',
+                tagColor: 'bg-fuchsia-500'
+            },
+            {
+                id: 'cyber-slim',
+                name: 'Cyber Slim',
+                price: 4599,
+                image: 'https://images.unsplash.com/photo-1539874754764-5a96559165b0?w=500',
+                tag: 'LIMITED',
+                tagColor: 'bg-purple-500'
+            },
+            {
+                id: 'nova-chrono',
+                name: 'Nova Chrono',
+                price: 9899,
+                image: 'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=500',
+                tag: 'HOT',
+                tagColor: 'bg-pink-500'
+            },
+            {
+                id: 'stealth-black',
+                name: 'Stealth Black',
+                price: 7299,
+                image: 'https://images.unsplash.com/photo-1548169874-53e85f753f1e?w=500',
+                tag: '',
+                tagColor: ''
+            },
+            {
+                id: 'aurora-gold',
+                name: 'Aurora Gold',
+                price: 11299,
+                image: 'https://images.unsplash.com/photo-1619134778706-7015533a6150?w=500',
+                tag: 'PREMIUM',
+                tagColor: 'bg-yellow-500'
+            }
+        ];
+
+        let cart = [];
+
+        // Initialize
+        window.addEventListener('load', () => {
+            initThreeJS();
+            renderProducts();
+            initCursor();
+            initScrollAnimations();
+            
+            // Hide loader
+            setTimeout(() => {
+                gsap.to('#loader', {
+                    opacity: 0,
+                    duration: 0.5,
+                    onComplete: () => {
+                        document.getElementById('loader').style.display = 'none';
+                    }
+                });
+            }, 1500);
+        });
+
+        // Three.js Hero Background
+        function initThreeJS() {
+            const canvas = document.getElementById('hero-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            
+            // Create particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 1500;
+            const posArray = new Float32Array(particlesCount * 3);
+            const colorArray = new Float32Array(particlesCount * 3);
+            
+            for(let i = 0; i < particlesCount * 3; i += 3) {
+                posArray[i] = (Math.random() - 0.5) * 50;
+                posArray[i+1] = (Math.random() - 0.5) * 50;
+                posArray[i+2] = (Math.random() - 0.5) * 50;
+                
+                // Alternate between cyan and magenta
+                if (Math.random() > 0.5) {
+                    colorArray[i] = 0;
+                    colorArray[i+1] = 0.95;
+                    colorArray[i+2] = 1;
+                } else {
+                    colorArray[i] = 1;
+                    colorArray[i+1] = 0;
+                    colorArray[i+2] = 1;
+                }
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+            
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.05,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+            
+            // Add wireframe torus
+            const torusGeometry = new THREE.TorusGeometry(10, 3, 16, 100);
+            const torusMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x00f3ff, 
+                wireframe: true,
+                transparent: true,
+                opacity: 0.1
+            });
+            const torus = new THREE.Mesh(torusGeometry, torusMaterial);
+            torus.rotation.x = Math.PI / 2;
+            scene.add(torus);
+            
+            const torus2 = new THREE.Mesh(
+                new THREE.TorusGeometry(8, 2, 16, 100),
+                new THREE.MeshBasicMaterial({ 
+                    color: 0xff00ff, 
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.1
+                })
+            );
+            scene.add(torus2);
+            
+            camera.position.z = 30;
+            
+            // Mouse interaction
+            let mouseX = 0;
+            let mouseY = 0;
+            
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                particlesMesh.rotation.y += 0.001;
+                particlesMesh.rotation.x += 0.0005;
+                
+                torus.rotation.x += 0.002;
+                torus.rotation.y += 0.001;
+                
+                torus2.rotation.x -= 0.002;
+                torus2.rotation.y -= 0.001;
+                
+                // Mouse parallax
+                particlesMesh.rotation.x += mouseY * 0.0005;
+                particlesMesh.rotation.y += mouseX * 0.0005;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Render Products
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card group relative glass rounded-2xl overflow-hidden border border-gray-800 hover:border-cyan-500/50 transition-all duration-500">
+                    ${product.tag ? `
+                        <div class="absolute top-4 left-4 z-20">
+                            <span class="${product.tagColor} text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                                ${product.tag}
+                            </span>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="relative h-80 overflow-hidden bg-gray-900">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent z-10 opacity-60"></div>
+                        <img src="${product.image}" alt="${product.name}" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                        
+                        <!-- Hover Overlay -->
+                        <div class="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                        
+                        <!-- Quick Add -->
+                        <button onclick="addToCart('${product.id}', '${product.name}', ${product.price}, '${product.image}')"
+                                class="absolute bottom-4 left-4 right-4 py-3 bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white font-orbitron font-bold rounded-lg transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-20 shadow-[0_0_20px_rgba(0,243,255,0.4)]">
+                            ADD TO CART
+                        </button>
+                    </div>
+                    
+                    <div class="p-6 relative z-10">
+                        <h3 class="font-orbitron text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">
+                            ${product.name}
+                        </h3>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-fuchsia-500 font-orbitron">$${product.price.toLocaleString()}</span>
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_#00f3ff]"></div>
+                                <div class="w-2 h-2 rounded-full bg-fuchsia-500 shadow-[0_0_10px_#ff00ff]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 3D Glow Effect -->
+                    <div class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-fuchsia-500 rounded-2xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-500 -z-10"></div>
+                </div>
+            `).join('');
+            
+            // Add tilt effect to cards
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = (centerX - x) / 20;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+                });
+            });
+        }
+
+        // Custom Cursor
+        function initCursor() {
+            const dot = document.querySelector('.cursor-dot');
+            const outline = document.querySelector('.cursor-outline');
+            
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+                
+                dot.style.left = `${posX}px`;
+                dot.style.top = `${posY}px`;
+                
+                outline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            });
+            
+            // Hover effects
+            document.querySelectorAll('a, button, .product-card').forEach(el => {
+                el.addEventListener('mouseenter', () => outline.classList.add('hover'));
+                el.addEventListener('mouseleave', () => outline.classList.remove('hover'));
+            });
+        }
+
+        // Scroll Animations
+        function initScrollAnimations() {
+            gsap.registerPlugin(ScrollTrigger);
+            
+            gsap.utils.toArray('.product-card').forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                    },
+                    y: 100,
+                    opacity: 0,
+                    duration: 0.8,
+                    delay: i * 0.1,
+                    ease: 'power3.out'
+                });
+            });
+            
+            gsap.from('#showcase .relative.floating', {
+                scrollTrigger: {
+                    trigger: '#showcase',
+                    start: 'top 70%',
+                },
+                scale: 0.8,
+                opacity: 0,
+                duration: 1.2,
+                ease: 'power3.out'
+            });
+        }
+
+        // Cart Functions
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('hidden');
+        }
+
+        function addToCart(id, name, price, image) {
+            const existing = cart.find(item => item.id === id);
+            
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ id, name, price, image, quantity: 1 });
+            }
+            
+            updateCartUI();
+            
+            // Animation feedback
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = 'ADDED!';
+            btn.classList.add('bg-green-500');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('bg-green-500');
+            }, 1000);
+            
+            // Open cart
+            if (!document.getElementById('cart-sidebar').classList.contains('open')) {
+                toggleCart();
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartUI();
+        }
+
+        function updateQuantity(id, delta) {
+            const item = cart.find(item => item.id === id);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    removeFromCart(id);
+                } else {
+                    updateCartUI(SVGComponentTransferFunctionElement);
+                }
+            }
+        }
+
+        function updateCartUI() {
+            const cartItems = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cart-total');
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            cartCount.innerText = totalItems;
+            cartTotal.innerText = '$' + totalPrice.toLocaleString();
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p class="text-gray-500 text-center py-8">Your cart is empty</p>';
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="flex gap-4 bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                        <img src="${item.image}" class="w-20 h-20 object-cover rounded bg-gray-900">
+                        <div class="flex-1">
+                            <h4 class="font-orbitron text-white font-bold text-sm mb-1">${item.name}</h4>
+                            <p class="text-cyan-400 font-bold mb-2">$${item.price.toLocaleString()}</p>
+                            <div class="flex items-center gap-3">
+                                <button onclick="updateQuantity('${item.id}', -1)" class="w-6 h-6 rounded bg-gray-700 text-white hover:bg-gray-600 flex items-center justify-center">-</button>
+                                <span class="text-white font-bold">${item.quantity}</span>
+                                <button onclick="updateQuantity('${item.id}', 1)" class="w-6 h-6 rounded bg-gray-700 text-white hover:bg-gray-600 flex items-center justify-center">+</button>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart('${item.id}')" class="text-gray-500 hover:text-red-500 self-start">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function checkout(payment) {
+            if (cart.length === 0) {
+                alert('buy!');
+                return;
+            }
+            alert('Proceeding to payment...');
+        }
+
+        // Mobile Menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('translate-x-full');
+            menu.classList.toggle('translate-x-0');
+        }
+
+        // Utilities
+        function scrollToCollection() {
+            document.getElementById('collection').scrollIntoView({ behavior: 'exreme' });
+        }
+
+        function playVideo() {
+            alert('Video modal would open here with cinematic trailer');
+        }
+
+        function handleSubscribe(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'SUBSCRIBED!';
+            btn.classList.add('bg-green-500');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('bg-green-500');
+                e.target.reset();
+            }, 2000);
+        }
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
